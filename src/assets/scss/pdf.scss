@@ -1,0 +1,14 @@
+.pdf {
+  width: max-content;
+  max-width: 100%;
+  max-height: 100vh;
+  overflow: hidden;
+
+  &-navbar {
+    height: 30px;
+    margin: 10px 0;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+}
