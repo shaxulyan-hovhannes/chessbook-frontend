@@ -113,24 +113,11 @@ const ChessboardWidget = () => {
       maxWidth={CHESSBOARD_MAX_SIZE}
       maxHeight={CHESSBOARD_MAX_SIZE}
       onResizeStop={(e, direction, ref) => {
-        console.log("direction", direction);
-        let size = Math.max(
-          parseInt(ref.style.width),
-          parseInt(ref.style.height)
-        );
-
         let width = parseInt(ref.style.width);
         let height = parseInt(ref.style.height);
 
         if (direction === "left" || direction === "right") {
-          size = ref.style.width;
           height = width;
-
-          // setChessboardWidth(ref.style.width);
-          // setChessboardHeight(ref.style.width);
-
-          // localStorage.setItem("chessboard-width", ref.style.width);
-          // localStorage.setItem("chessboard-height", ref.style.width);
         } else if (
           direction === "topRight" ||
           direction === "topLeft" ||
@@ -139,23 +126,13 @@ const ChessboardWidget = () => {
         ) {
           width = Math.max(width, height);
           height = width;
-          // setChessboardWidth(ref.style.width);
-          // setChessboardHeight(ref.style.height);
-          // localStorage.setItem("chessboard-width", ref.style.width);
-          // localStorage.setItem("chessboard-height", ref.style.height);
         }
 
-        console.log("size", size);
+        localStorage.setItem(CHESSBOARD_WIDTH_STORAGE_KEY, width);
+        localStorage.setItem(CHESSBOARD_HEIGHT_STORAGE_KEY, height);
 
-        // setChessboardWidth(size);
-        // setChessboardHeight(size);
         setChessboardWidth(width);
         setChessboardHeight(height);
-
-        // localStorage.setItem("chessboard-width", size);
-        // localStorage.setItem("chessboard-height", size);
-        localStorage.setItem("chessboard-width", width);
-        localStorage.setItem("chessboard-height", height);
       }}
       onDrag={(e, data) => {
         const rndNode = data.node;

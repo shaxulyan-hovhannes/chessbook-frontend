@@ -7,27 +7,35 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 
 import url from "assets/documents/document.pdf";
-import { PDF_BASE64 } from "constants/tmp-data";
+// import { PDF_BASE64 } from "constants/tmp-data";
 
 import {
   PDF_PAGES_INITIAL_LIMIT,
   PDF_PAGES_INCREMENT_AMOUNT,
   PDF_MAX_SCALE,
   PDF_MIN_SCALE,
+  SCROLL_TOP_STORAGE_KEY,
+  PAGE_NUMBER_STORAGE_KEY,
+  SCALE_STORAGE_KEY,
 } from "constants/pdf";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 const PDFViewer = () => {
   const [numPages, setNumPages] = useState(null);
-  const [pageNumber, setPageNumber] = useState(1);
+  const [pageNumber, setPageNumber] = useState(PDF_MIN_SCALE);
   const containerRef = useRef(null);
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(
+    parseFloat(localStorage.getItem(SCALE_STORAGE_KEY)) || PDF_MIN_SCALE
+  );
 
   const onDocumentLoadSuccess = ({ numPages }) => {
     setNumPages(
       numPages > PDF_PAGES_INITIAL_LIMIT
-        ? Math.max(PDF_PAGES_INITIAL_LIMIT, localStorage.getItem("page_number"))
+        ? Math.max(
+            PDF_PAGES_INITIAL_LIMIT,
+            localStorage.getItem(PAGE_NUMBER_STORAGE_KEY)
+          )
         : numPages
     );
   };
@@ -48,13 +56,21 @@ const PDFViewer = () => {
 
   const handleZoomIn = () => {
     if (scale < PDF_MAX_SCALE) {
-      setScale(scale + 0.1);
+      const newScale = scale + 0.1;
+
+      setScale(newScale);
+
+      localStorage.setItem(SCALE_STORAGE_KEY, newScale);
     }
   };
 
   const handleZoomOut = () => {
     if (scale > PDF_MIN_SCALE) {
-      setScale(scale - 0.1);
+      const newScale = scale - 0.1;
+
+      setScale(newScale);
+
+      localStorage.setItem(SCALE_STORAGE_KEY, newScale);
     }
   };
 
@@ -67,7 +83,7 @@ const PDFViewer = () => {
 
       if (container && container.scrollTop) {
         localStorage.setItem(
-          "pdf_scroll_top",
+          SCROLL_TOP_STORAGE_KEY,
           container.scrollTop > 10 ? container.scrollTop : 0
         );
       }
@@ -79,7 +95,7 @@ const PDFViewer = () => {
       if (currentPageIndex > -1) {
         setPageNumber(currentPageIndex);
         // ADD-TO-DO fix issue scroll to the top
-        localStorage.setItem("page_number", currentPageIndex);
+        localStorage.setItem(PAGE_NUMBER_STORAGE_KEY, currentPageIndex);
       }
 
       if (
@@ -90,7 +106,7 @@ const PDFViewer = () => {
         if (pageNumber < numPages) {
           setNumPages(numPages + PDF_PAGES_INCREMENT_AMOUNT);
           localStorage.setItem(
-            "page_number",
+            PAGE_NUMBER_STORAGE_KEY,
             numPages + PDF_PAGES_INCREMENT_AMOUNT
           );
         }
@@ -105,8 +121,8 @@ const PDFViewer = () => {
 
   useEffect(() => {
     setTimeout(() => {
-      const pdfScrollTop = localStorage.getItem("pdf_scroll_top");
-      const lastReadPageNumber = localStorage.getItem("page_number");
+      const pdfScrollTop = localStorage.getItem(SCROLL_TOP_STORAGE_KEY);
+      const lastReadPageNumber = localStorage.getItem(PAGE_NUMBER_STORAGE_KEY);
 
       containerRef.current.scrollTop = pdfScrollTop || 0;
 
@@ -154,15 +170,16 @@ const PDFViewer = () => {
           overflowY: "auto",
           overflowX: "hidden",
           height: "calc(100% - 50px)",
+          scrollBehavior: pageNumber > 5 ? "auto" : "smooth",
         }}
         ref={containerRef}
       >
         <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
           {Array.from(new Array(numPages), (el, index) => (
             <Page
-              // renderAnnotationLayer={false}
-              // renderTextLayer={false}
-              // options={{ canvasRenderer: true }}
+              renderAnnotationLayer={false}
+              renderTextLayer={false}
+              options={{ canvasRenderer: true }}
               key={`page_${index + 1}`}
               pageNumber={index + 1}
               scale={scale}
