@@ -5,9 +5,12 @@ import "react-pdf/dist/esm/Page/TextLayer.css";
 import { Document, Page, pdfjs } from "react-pdf";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
+import UploadFile from "components/ui/upload-file";
 
 import url from "assets/documents/document.pdf";
 // import { PDF_BASE64 } from "constants/tmp-data";
+
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 import {
   PDF_PAGES_INITIAL_LIMIT,
@@ -21,6 +24,25 @@ import {
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
+const VisuallyHiddenInput = () => {
+  return (
+    <input
+      type="file"
+      style={{
+        clip: "rect(0 0 0 0)",
+        clipPath: "inset(50%)",
+        height: 1,
+        overflow: "hidden",
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        whiteSpace: "nowrap",
+        width: 1,
+      }}
+    />
+  );
+};
+
 const PDFViewer = () => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(PDF_MIN_SCALE);
@@ -28,6 +50,7 @@ const PDFViewer = () => {
   const [scale, setScale] = useState(
     parseFloat(localStorage.getItem(SCALE_STORAGE_KEY)) || PDF_MIN_SCALE
   );
+  const [uploadedBook, setUploadedBook] = useState(url);
 
   const onDocumentLoadSuccess = ({ numPages }) => {
     setNumPages(
@@ -163,6 +186,11 @@ const PDFViewer = () => {
           >
             -
           </Button>
+          <UploadFile
+            onUploadSuccess={(data) => {
+              setUploadedBook(`data:application/pdf;base64,${data}`);
+            }}
+          />
         </Stack>
       </nav>
       <div
@@ -170,11 +198,13 @@ const PDFViewer = () => {
           overflowY: "auto",
           overflowX: "hidden",
           height: "calc(100% - 50px)",
-          scrollBehavior: pageNumber > 5 ? "auto" : "smooth",
         }}
         ref={containerRef}
       >
-        <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
+        <Document
+          file={uploadedBook || url}
+          onLoadSuccess={onDocumentLoadSuccess}
+        >
           {Array.from(new Array(numPages), (el, index) => (
             <Page
               renderAnnotationLayer={false}
