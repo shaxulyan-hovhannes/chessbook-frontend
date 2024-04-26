@@ -71,7 +71,7 @@ const PDFViewer = () => {
       pageOffsets.push(offset);
       offset += container.querySelector(
         `[data-page-number="${i + 1}"]`
-      ).clientHeight;
+      )?.clientHeight;
     }
 
     return pageOffsets;

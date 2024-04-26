@@ -10,6 +10,25 @@
   &-fixed-wrapper {
     position: absolute;
     z-index: 111111111111111111111111;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    align-items: center;
+    border-radius: 5px;
+    padding: 20px;
+    background-color: #d8d8d8;
+  }
+
+  &-tools {
+    width: 100%;
+    position: absolute;
+    top: 103%;
+    border-radius: 5px;
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
+    cursor: default;
   }
 }
 

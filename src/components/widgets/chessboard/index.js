@@ -1,10 +1,21 @@
 import { useState, useEffect } from "react";
+import * as _ from "lodash";
 
 import { Chessboard } from "react-chessboard";
 import { Chess } from "chess.js";
 
 import Fab from "@mui/material/Fab";
 import RNDWidget from "../rnd-widget";
+import Button from "@mui/material/Button";
+
+import StartIcon from "@mui/icons-material/Start";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import FlipCameraAndroidIcon from "@mui/icons-material/FlipCameraAndroid";
+import ListIcon from "@mui/icons-material/List";
+import MenuUI from "components/ui/upload-file/menu";
+import { ReactComponent as LogoIcon } from "assets/icons/logo-icon.svg";
+
+import useMenu from "hooks/useMenu";
 
 import {
   CHESSBOARD_MAX_SIZE,
@@ -13,6 +24,7 @@ import {
   POS_Y_STORAGE_KEY,
   CHESSBOARD_WIDTH_STORAGE_KEY,
   CHESSBOARD_HEIGHT_STORAGE_KEY,
+  CHESSBOARD_START_POSITION,
 } from "constants/chessboard";
 
 const ChessboardWidget = () => {
@@ -23,31 +35,62 @@ const ChessboardWidget = () => {
   const [chessboardHeight, setChessboardHeight] = useState(
     CHESSBOARD_DEFAULT_SIZE
   );
-
   const [game, setGame] = useState(new Chess());
+  const [gamePosition, setGamePosition] = useState(game.fen());
+  const [currentMove, setCurrentMove] = useState(0);
+  const [gameHistory, setGameHistory] = useState([
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0",
+  ]);
+
+  // console.log("GAME", game);
+
+  const [boardOrientation, setBoardOrientation] = useState("white");
+
+  const { handleClick, handleClose, open, anchorEl } = useMenu();
 
   const chessboardPositionX =
     parseInt(localStorage.getItem(POS_X_STORAGE_KEY)) || 0;
   const chessboardPositionY =
     parseInt(localStorage.getItem(POS_Y_STORAGE_KEY)) || 0;
 
-  function onDrop(sourceSquare, targetSquare, piece) {
+  const onDrop = (sourceSquare, targetSquare, piece) => {
     try {
-      const gameCopy = Object.create(game);
-      const move = game.move({
+      const gameCopy = _.cloneDeep(game);
+      console.log("DROP MOVE", {
+        sourceSquare,
+        targetSquare,
+      });
+
+      const move = gameCopy.move({
         from: sourceSquare,
         to: targetSquare,
         promotion: piece[1].toLowerCase() ?? "q",
       });
+
+      const position = gameCopy.fen();
+
+      setGamePosition(position);
+      setGameHistory([...gameHistory, position]);
+      console.log("POSITION", gamePosition);
+
       setGame(gameCopy);
+      setCurrentMove(currentMove + 1);
 
       if (move === null) return false;
 
       return true;
     } catch (err) {
-      console.log(err);
+      console.log("Illegal move");
     }
-  }
+  };
+
+  const handleFlipBoard = () => {
+    if (boardOrientation === "white") {
+      setBoardOrientation("black");
+    } else {
+      setBoardOrientation("white");
+    }
+  };
 
   useEffect(() => {
     setTimeout(() => {
@@ -92,16 +135,36 @@ const ChessboardWidget = () => {
   return showChessboard ? (
     <RNDWidget
       title="Double click for close the chessboard"
-      onDoubleClick={() => {
-        localStorage.removeItem(POS_X_STORAGE_KEY);
-        localStorage.removeItem(POS_Y_STORAGE_KEY);
-        localStorage.removeItem(CHESSBOARD_WIDTH_STORAGE_KEY);
-        localStorage.removeItem(CHESSBOARD_HEIGHT_STORAGE_KEY);
+      onDoubleClickCapture={({ target }) => {
+        const targetClassList = Array.from(target.classList);
+        const targetParentNode = target.parentNode;
+        const targetDataset = Object.keys({
+          ...target.dataset,
+        });
+        const targetParentNodeDataset = Object.keys({
+          ...targetParentNode.dataset,
+        });
 
-        setChessboardWidth(CHESSBOARD_DEFAULT_SIZE);
-        setChessboardHeight(CHESSBOARD_DEFAULT_SIZE);
+        if (
+          (targetClassList &&
+            targetClassList.includes("chessboard-fixed-wrapper")) ||
+          (targetParentNode.nodeName === "DIV" &&
+            typeof targetParentNode.dataset.square === "string" &&
+            !!targetParentNode.dataset.square.length) ||
+          (target.nodeName === "svg" && !targetDataset.includes("noClose")) ||
+          (target.nodeName === "path" &&
+            !targetParentNodeDataset.includes("noClose"))
+        ) {
+          localStorage.removeItem(POS_X_STORAGE_KEY);
+          localStorage.removeItem(POS_Y_STORAGE_KEY);
+          localStorage.removeItem(CHESSBOARD_WIDTH_STORAGE_KEY);
+          localStorage.removeItem(CHESSBOARD_HEIGHT_STORAGE_KEY);
 
-        setShowChessboard(false);
+          setChessboardWidth(CHESSBOARD_DEFAULT_SIZE);
+          setChessboardHeight(CHESSBOARD_DEFAULT_SIZE);
+
+          setShowChessboard(false);
+        }
       }}
       className="chessboard-fixed-wrapper"
       cancel=".no-drag"
@@ -144,17 +207,171 @@ const ChessboardWidget = () => {
         localStorage.setItem(POS_Y_STORAGE_KEY, data.lastY);
       }}
     >
-      <Chessboard
-        id="myBoard"
-        position={game.fen()}
-        onPieceDrop={onDrop}
-        customDarkSquareStyle={{
-          backgroundColor: "var(--main-theme-color)",
-        }}
-        customLightSquareStyle={{
-          backgroundColor: "white",
-        }}
-      />
+      <>
+        <h1
+          style={{
+            position: "absolute",
+            zIndex: 111,
+            top: -42,
+            left: 0,
+            fontSize: `clamp(0.5rem, ${
+              Math.min(chessboardHeight, chessboardWidth) / 14
+            }px, 28px)`,
+          }}
+        >
+          <LogoIcon style={{ width: 32, height: 32 }} />
+          CHESS-
+          <span style={{ color: "var(--main-theme-color" }}>AMARANTH</span> 0.
+          <span style={{ color: "var(--main-theme-color" }}>1</span>
+        </h1>
+        <Chessboard
+          id="myBoard"
+          position={gamePosition}
+          onPieceDrop={onDrop}
+          customDarkSquareStyle={{
+            backgroundColor: "var(--main-theme-color)",
+          }}
+          customLightSquareStyle={{
+            backgroundColor: "white",
+          }}
+          boardOrientation={boardOrientation}
+          getPositionObject={(curPosition) => {
+            // console.log("cUR", { curPosition, pos: game.fen() });
+          }}
+        />
+        <div
+          className="no-drag chessboard-tools"
+          title={"Features list"}
+          style={{ top: chessboardHeight + 10 }}
+        >
+          {/* Menu list */}
+          <Button
+            onClick={handleClick}
+            variant="contained"
+            sx={{
+              backgroundColor: "var(--main-theme-color)",
+              "&:hover": {
+                backgroundColor: "var(--main-theme-color)",
+              },
+            }}
+            className="no-drag"
+          >
+            <ListIcon data-no-close />
+          </Button>
+          <Button
+            title="Go to the start position"
+            onClick={() => {}}
+            variant="contained"
+            sx={{
+              backgroundColor: "var(--main-theme-color)",
+              "&:hover": {
+                backgroundColor: "var(--main-theme-color)",
+              },
+            }}
+            className="no-drag"
+          >
+            <StartIcon
+              data-no-close
+              sx={{
+                transform: "rotateY(180deg)",
+              }}
+            />
+          </Button>
+          {/* Undo move */}
+          <Button
+            title="Undo the move"
+            onClick={() => {
+              try {
+                const gameCopy = _.cloneDeep(game);
+
+                // gameCopy.move(gameHistory[currentMove - 1]);
+
+                setGamePosition(gameCopy.fen());
+                // console.log("POSITION", gamePosition);
+
+                setGame(gameCopy);
+                setCurrentMove(currentMove - 1);
+
+                return true;
+              } catch (err) {
+                console.log(err);
+              }
+            }}
+            variant="contained"
+            sx={{
+              backgroundColor: "var(--main-theme-color)",
+              "&:hover": {
+                backgroundColor: "var(--main-theme-color)",
+              },
+            }}
+            className="no-drag"
+          >
+            <ArrowForwardIosIcon
+              data-no-close
+              sx={{
+                transform: "rotateY(180deg)",
+              }}
+            />
+          </Button>
+          <Button
+            title="Flip the board"
+            onClick={handleFlipBoard}
+            variant="contained"
+            sx={{
+              backgroundColor: "var(--main-theme-color)",
+              "&:hover": {
+                backgroundColor: "var(--main-theme-color)",
+              },
+            }}
+            className="no-drag"
+          >
+            <FlipCameraAndroidIcon data-no-close />
+          </Button>
+          {/* Redo move */}
+          <Button
+            title="Redo the move"
+            onClick={() => {
+              try {
+                const gameCopy = _.cloneDeep(game);
+
+                return true;
+              } catch (err) {
+                console.log(err);
+              }
+            }}
+            variant="contained"
+            sx={{
+              backgroundColor: "var(--main-theme-color)",
+              "&:hover": {
+                backgroundColor: "var(--main-theme-color)",
+              },
+            }}
+            className="no-drag"
+          >
+            <ArrowForwardIosIcon data-no-close />
+          </Button>
+          <Button
+            title="Go to the final position"
+            onClick={() => {}}
+            variant="contained"
+            sx={{
+              backgroundColor: "var(--main-theme-color)",
+              "&:hover": {
+                backgroundColor: "var(--main-theme-color)",
+              },
+            }}
+            className="no-drag"
+          >
+            <StartIcon data-no-close />
+          </Button>
+          <MenuUI
+            open={open}
+            anchorEl={anchorEl}
+            handleClose={handleClose}
+            width={chessboardWidth}
+          />
+        </div>
+      </>
     </RNDWidget>
   ) : (
     <div className="chessboard-show">
