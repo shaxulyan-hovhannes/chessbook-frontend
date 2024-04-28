@@ -4,48 +4,12 @@ import PropTypes from "prop-types";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
-import AccountTreeIcon from "@mui/icons-material/AccountTree";
-import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
-
 const MenuUI = ({
   handleClose = () => {},
   open = false,
   anchorEl = null,
   width = "100%",
-  menuItems = [
-    {
-      renderer: (
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            alignItems: "center",
-          }}
-        >
-          <FormatListNumberedIcon />
-          Annotations
-        </div>
-      ),
-      handleClick: () => {},
-      key: "1",
-    },
-    {
-      renderer: (
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            alignItems: "center",
-          }}
-        >
-          <AccountTreeIcon />
-          Analysis
-        </div>
-      ),
-      handleClick: () => {},
-      key: "2",
-    },
-  ],
+  menuItems = [],
   ...rest
 }) => {
   return (

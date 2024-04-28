@@ -38,9 +38,9 @@ const useChessboard = () => {
   } = useContext(ChessboardContext);
 
   const chessboardPositionX =
-    parseInt(localStorage.getItem(POS_X_STORAGE_KEY)) || 0;
+    parseInt(localStorage.getItem(POS_X_STORAGE_KEY)) || 20;
   const chessboardPositionY =
-    parseInt(localStorage.getItem(POS_Y_STORAGE_KEY)) || 0;
+    parseInt(localStorage.getItem(POS_Y_STORAGE_KEY)) || 50;
 
   useEffect(() => {
     const storageChessboardWidth = parseInt(
@@ -59,7 +59,7 @@ const useChessboard = () => {
       setChessboardHeight(storageChessboardHeight);
     }
 
-    if (chessboardPositionX || chessboardPositionY) {
+    if (chessboardPositionX > 20 || chessboardPositionY > 50) {
       setShowChessboard(true);
     }
   }, [
@@ -85,7 +85,7 @@ const useChessboard = () => {
         rndElement.style.left = `${chessboardPositionX}px`;
         rndElement.style.top = `${chessboardPositionY}px`;
       }
-    }, 200);
+    }, 150);
     // ADD-TO-DO Need to refactor
   }, [
     showChessboard,

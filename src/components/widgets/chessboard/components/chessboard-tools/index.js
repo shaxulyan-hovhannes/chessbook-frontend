@@ -10,6 +10,8 @@ import StartIcon from "@mui/icons-material/Start";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import FlipCameraAndroidIcon from "@mui/icons-material/FlipCameraAndroid";
 import ListIcon from "@mui/icons-material/List";
+import AccountTreeIcon from "@mui/icons-material/AccountTree";
+import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 
 const ChessboardTools = () => {
   const {
@@ -23,6 +25,48 @@ const ChessboardTools = () => {
   } = useChessboard();
 
   const { handleClick, handleClose, open, anchorEl } = useMenu();
+
+  const onFeaturesListItemClick = () => {
+    handleOpenAnnotationBoard();
+    handleClose();
+  };
+
+  const menuItems = [
+    {
+      renderer: (
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            alignItems: "center",
+          }}
+        >
+          <FormatListNumberedIcon />
+          Annotations
+        </div>
+      ),
+      handleClick: onFeaturesListItemClick,
+      key: "1",
+    },
+    {
+      renderer: (
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            alignItems: "center",
+          }}
+        >
+          <AccountTreeIcon />
+          Analysis
+        </div>
+      ),
+      handleClick: () => {
+        alert("Moves analysis modal");
+      },
+      key: "2",
+    },
+  ];
 
   return (
     <div className="no-drag chessboard-tools" title={"Features list"}>
@@ -132,6 +176,7 @@ const ChessboardTools = () => {
         anchorEl={anchorEl}
         handleClose={handleClose}
         width={chessboardWidth}
+        menuItems={menuItems}
       />
     </div>
   );

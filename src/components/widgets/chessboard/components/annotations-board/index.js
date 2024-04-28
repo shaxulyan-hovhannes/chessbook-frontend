@@ -12,7 +12,12 @@ import { ANNOTATIONS_BOARD_RADIO_FORM_DATA } from "constants/chessboard";
 import CloseIcon from "@mui/icons-material/Close";
 
 const ChessboardAnnotationsBoard = () => {
-  const { chessboardWidth, parsedPGN, showAnnotationsBoard } = useChessboard();
+  const {
+    chessboardWidth,
+    parsedPGN,
+    showAnnotationsBoard,
+    handleCloseAnnotationsBoard,
+  } = useChessboard();
 
   const [boardPosition, setBoardPosition] = useState(
     ANNOTATIONS_BOARD_RADIO_FORM_DATA[1].value
@@ -26,7 +31,7 @@ const ChessboardAnnotationsBoard = () => {
     >
       <div className="chessboard-annotations-board-header">
         <p>Annotations</p>
-        <Button>
+        <Button onClick={handleCloseAnnotationsBoard}>
           <CloseIcon data-no-close />
         </Button>
       </div>

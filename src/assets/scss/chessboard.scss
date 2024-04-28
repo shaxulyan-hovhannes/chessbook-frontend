@@ -123,22 +123,10 @@
           font-size: 1.2rem;
           font-weight: 500;
 
-          & > div:first-child {
-            // border: 2px solid red;
-            // font-size: 1.8rem;
-          }
-
-          & > div:last-child {
-            // border: 2px solid green;
-            // font-size: 1.8rem;
-          }
-
           & button {
             min-width: auto;
             font-size: 1.2rem;
-            // color: black;
             text-transform: none;
-            // border: 1px solid red;
           }
         }
       }
