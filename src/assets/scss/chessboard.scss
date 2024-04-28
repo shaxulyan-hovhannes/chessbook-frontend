@@ -17,16 +17,15 @@
 
   &-fixed-wrapper {
     position: absolute;
-    z-index: 111111111111111111111111;
+    z-index: 5;
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
     align-items: center;
     border-radius: 5px;
     padding: 20px;
-    background-color: #d8d8d8;
-    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
-      rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+    background-color: var(--main-theme-background-color);
+    box-shadow: var(--main-theme-box-shadow);
   }
 
   &-tools {
@@ -39,6 +38,111 @@
     justify-content: center;
     align-items: center;
     cursor: default;
+  }
+
+  &-annotations {
+    &-board {
+      width: 70%;
+      height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      position: absolute;
+      background-color: var(--main-theme-background-color);
+      box-shadow: var(--main-theme-box-shadow);
+      border-radius: 5px;
+      padding: 20px;
+
+      &-left {
+        top: 0;
+        right: calc(100% + 20px);
+      }
+
+      &-right {
+        top: 0;
+        left: calc(100% + 20px);
+      }
+
+      &-bottom {
+        height: 28vh;
+        top: calc(100% + 62px);
+      }
+
+      &-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        & > p:first-child {
+          height: 35px;
+          flex: 1;
+          display: flex;
+          align-items: center;
+          font-size: 1.2rem;
+          font-weight: 400;
+        }
+
+        & > button {
+          width: 35px;
+          height: 35px;
+          min-width: auto;
+          min-height: auto;
+          cursor: pointer;
+          display: flex;
+          justify-self: center;
+          align-items: center;
+          padding: 5px;
+          border: 0;
+          border-radius: 50%;
+          transition: 0.2s;
+          background: transparent;
+          color: black;
+          font-weight: 600;
+
+          &:hover {
+            background: rgba(0, 0, 0, 0.1);
+          }
+
+          &:active {
+            background: rgba(0, 0, 0, 0.15);
+          }
+        }
+      }
+
+      &-moves {
+        border: 2px solid rgb(204, 203, 203);
+        height: calc(100% - 80px);
+        overflow-y: auto;
+        margin-top: 10px;
+        border-radius: 10px;
+        padding: 10px;
+
+        &-item {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          font-size: 1.2rem;
+          font-weight: 500;
+
+          & > div:first-child {
+            // border: 2px solid red;
+            // font-size: 1.8rem;
+          }
+
+          & > div:last-child {
+            // border: 2px solid green;
+            // font-size: 1.8rem;
+          }
+
+          & button {
+            min-width: auto;
+            font-size: 1.2rem;
+            // color: black;
+            text-transform: none;
+            // border: 1px solid red;
+          }
+        }
+      }
+    }
   }
 }
 

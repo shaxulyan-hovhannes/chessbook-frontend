@@ -19,6 +19,7 @@ const ChessboardTools = () => {
     onRedoPosition,
     onFinalPosition,
     handleFlipBoard,
+    handleOpenAnnotationBoard,
   } = useChessboard();
 
   const { handleClick, handleClose, open, anchorEl } = useMenu();

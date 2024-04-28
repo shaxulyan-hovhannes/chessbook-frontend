@@ -29,6 +29,12 @@ const useChessboard = () => {
     onFinalPosition,
     boardOrientation,
     handleFlipBoard,
+    showAnnotationsBoard,
+    handleOpenAnnotationBoard,
+    handleCloseAnnotationsBoard,
+    parsedPGN,
+    selectedMove,
+    handleSetPosition,
   } = useContext(ChessboardContext);
 
   const chessboardPositionX =
@@ -79,7 +85,7 @@ const useChessboard = () => {
         rndElement.style.left = `${chessboardPositionX}px`;
         rndElement.style.top = `${chessboardPositionY}px`;
       }
-    }, 150);
+    }, 200);
     // ADD-TO-DO Need to refactor
   }, [
     showChessboard,
@@ -104,6 +110,12 @@ const useChessboard = () => {
     onFinalPosition,
     boardOrientation,
     handleFlipBoard,
+    showAnnotationsBoard,
+    handleOpenAnnotationBoard,
+    handleCloseAnnotationsBoard,
+    parsedPGN,
+    selectedMove,
+    handleSetPosition,
   };
 };
 

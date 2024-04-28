@@ -1,6 +1,8 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useMemo } from "react";
 import * as _ from "lodash";
 import { Chess } from "chess.js";
+
+import { parseMovesHistoryToPGN } from "utils/chessboard";
 
 import {
   CHESSBOARD_DEFAULT_SIZE,
@@ -15,8 +17,6 @@ export const ChessboardContext = createContext();
 const ChessboardProvider = ({ children }) => {
   const [game, setGame] = useState(new Chess());
 
-  console.log("GAME PGN", game.pgn());
-
   const [showChessboard, setShowChessboard] = useState(false);
 
   const [chessboardWidth, setChessboardWidth] = useState(
@@ -30,6 +30,13 @@ const ChessboardProvider = ({ children }) => {
   const [movesHistory, setMovesHistory] = useState({});
 
   const [boardOrientation, setBoardOrientation] = useState("white");
+
+  const [showAnnotationsBoard, setShowAnnotationsBoard] = useState(false);
+
+  const movesHistoryValues = useMemo(
+    () => Object.values(movesHistory),
+    [movesHistory]
+  );
 
   const toggleShow = (bool = null) => {
     setShowChessboard(bool ?? !showChessboard);
@@ -55,11 +62,6 @@ const ChessboardProvider = ({ children }) => {
       };
 
       const movesHistoryLength = Object.keys(newMovesHistory).length;
-
-      console.log({
-        currentMove,
-        movesHistoryLength,
-      });
 
       if (currentMove < movesHistoryLength) {
         let moveIndex = currentMove;
@@ -124,7 +126,7 @@ const ChessboardProvider = ({ children }) => {
 
   const onRedoPosition = () => {
     try {
-      const movesHistoryLength = Object.keys(movesHistory).length;
+      const movesHistoryLength = movesHistoryValues.length;
 
       if (currentMove > movesHistoryLength) return;
 
@@ -149,7 +151,7 @@ const ChessboardProvider = ({ children }) => {
 
   const onFinalPosition = () => {
     try {
-      const movesHistoryLength = Object.keys(movesHistory).length;
+      const movesHistoryLength = movesHistoryValues.length;
 
       if (currentMove > movesHistoryLength) return;
 
@@ -232,7 +234,7 @@ const ChessboardProvider = ({ children }) => {
       height = width;
     }
 
-    const boardMinSize = Math.floor(CHESSBOARD_DEFAULT_SIZE / 2);
+    const boardMinSize = Math.floor(CHESSBOARD_DEFAULT_SIZE / 1.7);
 
     const halfOfWidth = Math.round((width / 100) * 50);
 
@@ -256,6 +258,46 @@ const ChessboardProvider = ({ children }) => {
     localStorage.setItem(CHESSBOARD_HEIGHT_STORAGE_KEY, height);
   };
 
+  const handleOpenAnnotationBoard = () => {
+    setShowAnnotationsBoard(true);
+  };
+
+  const handleCloseAnnotationsBoard = () => {
+    setShowAnnotationsBoard(false);
+  };
+
+  const handleSetPosition = (move) => {
+    let currentMoveIndex = currentMove - 2;
+
+    const foundMoveIndex = movesHistoryValues.findIndex(
+      (moveItem) => moveItem.san === move
+    );
+
+    if (currentMoveIndex === foundMoveIndex) return;
+
+    const gameCopy = _.cloneDeep(game);
+
+    if (currentMoveIndex < foundMoveIndex) {
+      while (++currentMoveIndex <= foundMoveIndex) {
+        const targetMove = movesHistoryValues[currentMoveIndex];
+
+        gameCopy.move({
+          from: targetMove.from,
+          to: targetMove.to,
+        });
+      }
+    } else {
+      while (currentMoveIndex > foundMoveIndex) {
+        gameCopy.undo();
+
+        currentMoveIndex--;
+      }
+    }
+
+    setGame(gameCopy);
+    setCurrentMove(foundMoveIndex + 2);
+  };
+
   const value = {
     game,
     showChessboard,
@@ -274,6 +316,12 @@ const ChessboardProvider = ({ children }) => {
     onFinalPosition,
     boardOrientation,
     handleFlipBoard,
+    showAnnotationsBoard,
+    handleOpenAnnotationBoard,
+    handleCloseAnnotationsBoard,
+    parsedPGN: parseMovesHistoryToPGN(Object.values(movesHistory)),
+    selectedMove: movesHistoryValues[currentMove - 2],
+    handleSetPosition,
   };
 
   return (

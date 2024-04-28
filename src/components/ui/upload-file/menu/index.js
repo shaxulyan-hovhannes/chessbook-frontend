@@ -60,6 +60,7 @@ const MenuUI = ({
       sx={{
         width,
         top: 10,
+        zIndex: "10 !important",
         "& .MuiPopover-paper": {
           width: "100%",
         },

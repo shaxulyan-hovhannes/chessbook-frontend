@@ -5,7 +5,7 @@ import { Chessboard } from "react-chessboard";
 import Fab from "@mui/material/Fab";
 import RNDWidget from "../rnd-widget";
 import ChessboardTools from "./components/chessboard-tools";
-
+import ChessboardAnnotationsBoard from "./components/annotations-board";
 import { ReactComponent as LogoIcon } from "assets/icons/logo-icon.svg";
 
 import useChessboard from "hooks/useChessboard";
@@ -88,6 +88,7 @@ const ChessboardWidget = () => {
           boardOrientation={boardOrientation}
         />
         <ChessboardTools />
+        <ChessboardAnnotationsBoard />
       </>
     </RNDWidget>
   ) : (
