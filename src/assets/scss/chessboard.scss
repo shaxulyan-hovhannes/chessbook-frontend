@@ -7,6 +7,14 @@
     left: 10px;
   }
 
+  &-logo {
+    position: absolute;
+    z-index: 1;
+    top: -42px;
+    left: 0;
+    font-weight: 600;
+  }
+
   &-fixed-wrapper {
     position: absolute;
     z-index: 111111111111111111111111;
@@ -17,6 +25,8 @@
     border-radius: 5px;
     padding: 20px;
     background-color: #d8d8d8;
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
+      rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
   }
 
   &-tools {

@@ -14,6 +14,7 @@ import FlipCameraAndroidIcon from "@mui/icons-material/FlipCameraAndroid";
 import ListIcon from "@mui/icons-material/List";
 import MenuUI from "components/ui/upload-file/menu";
 import { ReactComponent as LogoIcon } from "assets/icons/logo-icon.svg";
+import AnnotationsBoard from "./components/annotations";
 
 import useMenu from "hooks/useMenu";
 
@@ -36,13 +37,18 @@ const ChessboardWidget = () => {
     CHESSBOARD_DEFAULT_SIZE
   );
   const [game, setGame] = useState(new Chess());
-  const [gamePosition, setGamePosition] = useState(game.fen());
-  const [currentMove, setCurrentMove] = useState(0);
-  const [gameHistory, setGameHistory] = useState([
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0",
-  ]);
+  const [currentMove, setCurrentMove] = useState(1);
+  const [movesHistory, setMovesHistory] = useState({});
 
-  // console.log("GAME", game);
+  console.log("GAME", {
+    currentMove,
+    movesHistory,
+    game,
+    HISTORY_LENGTH: JSON.parse(JSON.stringify(game.pgn())),
+    // IS_CHECKMATE: game.isCheckmate(),
+    // IS_STALEMATE: game.isStalemate(),
+    IS_GAME_OVER: game.isGameOver(),
+  });
 
   const [boardOrientation, setBoardOrientation] = useState("white");
 
@@ -56,27 +62,37 @@ const ChessboardWidget = () => {
   const onDrop = (sourceSquare, targetSquare, piece) => {
     try {
       const gameCopy = _.cloneDeep(game);
-      console.log("DROP MOVE", {
-        sourceSquare,
-        targetSquare,
-      });
 
-      const move = gameCopy.move({
+      const movePayload = {
         from: sourceSquare,
         to: targetSquare,
         promotion: piece[1].toLowerCase() ?? "q",
-      });
+      };
 
-      const position = gameCopy.fen();
-
-      setGamePosition(position);
-      setGameHistory([...gameHistory, position]);
-      console.log("POSITION", gamePosition);
-
-      setGame(gameCopy);
-      setCurrentMove(currentMove + 1);
+      const move = gameCopy.move(movePayload);
 
       if (move === null) return false;
+
+      const newMovesHistory = {
+        ...movesHistory,
+        [currentMove]: move,
+      };
+
+      const movesHistoryLength = Object.keys(newMovesHistory).length;
+
+      if (currentMove < movesHistoryLength) {
+        let moveIndex = currentMove;
+
+        while (++moveIndex <= movesHistoryLength) {
+          delete newMovesHistory[moveIndex];
+        }
+      }
+
+      setMovesHistory(newMovesHistory);
+
+      setCurrentMove(currentMove + 1);
+
+      setGame(gameCopy);
 
       return true;
     } catch (err) {
@@ -107,7 +123,8 @@ const ChessboardWidget = () => {
         rndElement.style.left = `${chessboardPositionX}px`;
         rndElement.style.top = `${chessboardPositionY}px`;
       }
-    }, 300);
+    }, 150);
+    // ADD-TO-DO Need to refactor
   }, [showChessboard, chessboardWidth, chessboardHeight]);
 
   useEffect(() => {
@@ -175,6 +192,9 @@ const ChessboardWidget = () => {
       }}
       maxWidth={CHESSBOARD_MAX_SIZE}
       maxHeight={CHESSBOARD_MAX_SIZE}
+      onResize={() => {
+        return false;
+      }}
       onResizeStop={(e, direction, ref) => {
         let width = parseInt(ref.style.width);
         let height = parseInt(ref.style.height);
@@ -191,11 +211,28 @@ const ChessboardWidget = () => {
           height = width;
         }
 
-        localStorage.setItem(CHESSBOARD_WIDTH_STORAGE_KEY, width);
-        localStorage.setItem(CHESSBOARD_HEIGHT_STORAGE_KEY, height);
+        const boardMinSize = Math.floor(CHESSBOARD_DEFAULT_SIZE / 2);
+
+        const halfOfWidth = Math.round((width / 100) * 50);
+
+        if (Math.round(width + halfOfWidth) < height) {
+          width += halfOfWidth;
+        }
+
+        if (width < boardMinSize || height < boardMinSize) {
+          width = boardMinSize;
+          height = width;
+        }
+
+        if (height < width) {
+          width = height;
+        }
 
         setChessboardWidth(width);
         setChessboardHeight(height);
+
+        localStorage.setItem(CHESSBOARD_WIDTH_STORAGE_KEY, width);
+        localStorage.setItem(CHESSBOARD_HEIGHT_STORAGE_KEY, height);
       }}
       onDrag={(e, data) => {
         const rndNode = data.node;
@@ -208,12 +245,9 @@ const ChessboardWidget = () => {
       }}
     >
       <>
-        <h1
+        <div
+          className="chessboard-logo"
           style={{
-            position: "absolute",
-            zIndex: 111,
-            top: -42,
-            left: 0,
             fontSize: `clamp(0.5rem, ${
               Math.min(chessboardHeight, chessboardWidth) / 14
             }px, 28px)`,
@@ -223,10 +257,10 @@ const ChessboardWidget = () => {
           CHESS-
           <span style={{ color: "var(--main-theme-color" }}>AMARANTH</span> 0.
           <span style={{ color: "var(--main-theme-color" }}>1</span>
-        </h1>
+        </div>
         <Chessboard
           id="myBoard"
-          position={gamePosition}
+          position={game.fen()}
           onPieceDrop={onDrop}
           customDarkSquareStyle={{
             backgroundColor: "var(--main-theme-color)",
@@ -235,15 +269,8 @@ const ChessboardWidget = () => {
             backgroundColor: "white",
           }}
           boardOrientation={boardOrientation}
-          getPositionObject={(curPosition) => {
-            // console.log("cUR", { curPosition, pos: game.fen() });
-          }}
         />
-        <div
-          className="no-drag chessboard-tools"
-          title={"Features list"}
-          style={{ top: chessboardHeight + 10 }}
-        >
+        <div className="no-drag chessboard-tools" title={"Features list"}>
           {/* Menu list */}
           <Button
             onClick={handleClick}
@@ -260,10 +287,32 @@ const ChessboardWidget = () => {
           </Button>
           <Button
             title="Go to the start position"
-            onClick={() => {}}
+            // disabled={currentMove <= 1}
+            onClick={() => {
+              try {
+                if (currentMove <= 1) {
+                  return;
+                }
+
+                const gameCopy = _.cloneDeep(game);
+
+                let moveIndex = currentMove;
+
+                while (moveIndex >= 1) {
+                  gameCopy.undo();
+                  moveIndex--;
+                }
+
+                setGame(gameCopy);
+                setCurrentMove(1);
+              } catch (err) {
+                throw err;
+              }
+            }}
             variant="contained"
             sx={{
               backgroundColor: "var(--main-theme-color)",
+              border: "1px solid white",
               "&:hover": {
                 backgroundColor: "var(--main-theme-color)",
               },
@@ -280,16 +329,20 @@ const ChessboardWidget = () => {
           {/* Undo move */}
           <Button
             title="Undo the move"
+            // disabled={currentMove <= 1}
             onClick={() => {
               try {
+                if (currentMove <= 1) {
+                  console.log("UNDO WILL NOT WORK");
+                  return;
+                }
+
                 const gameCopy = _.cloneDeep(game);
 
-                // gameCopy.move(gameHistory[currentMove - 1]);
-
-                setGamePosition(gameCopy.fen());
-                // console.log("POSITION", gamePosition);
+                gameCopy.undo();
 
                 setGame(gameCopy);
+
                 setCurrentMove(currentMove - 1);
 
                 return true;
@@ -300,6 +353,7 @@ const ChessboardWidget = () => {
             variant="contained"
             sx={{
               backgroundColor: "var(--main-theme-color)",
+              border: "1px solid white",
               "&:hover": {
                 backgroundColor: "var(--main-theme-color)",
               },
@@ -332,7 +386,22 @@ const ChessboardWidget = () => {
             title="Redo the move"
             onClick={() => {
               try {
+                const movesHistoryLength = Object.keys(movesHistory).length;
+
+                if (currentMove > movesHistoryLength) return;
+
                 const gameCopy = _.cloneDeep(game);
+
+                const targetMoveItem = movesHistory[currentMove];
+
+                gameCopy.move({
+                  from: targetMoveItem.from,
+                  to: targetMoveItem.to,
+                });
+
+                setGame(gameCopy);
+
+                setCurrentMove(currentMove + 1);
 
                 return true;
               } catch (err) {
@@ -342,6 +411,7 @@ const ChessboardWidget = () => {
             variant="contained"
             sx={{
               backgroundColor: "var(--main-theme-color)",
+              border: "1px solid white",
               "&:hover": {
                 backgroundColor: "var(--main-theme-color)",
               },
@@ -352,10 +422,38 @@ const ChessboardWidget = () => {
           </Button>
           <Button
             title="Go to the final position"
-            onClick={() => {}}
+            onClick={() => {
+              try {
+                const movesHistoryLength = Object.keys(movesHistory).length;
+
+                if (currentMove > movesHistoryLength) return;
+
+                const gameCopy = _.cloneDeep(game);
+
+                let moveIndex = currentMove;
+
+                while (moveIndex <= movesHistoryLength) {
+                  const { from, to } = movesHistory[moveIndex];
+
+                  gameCopy.move({
+                    from: from,
+                    to: to,
+                  });
+                  moveIndex++;
+                }
+
+                setGame(gameCopy);
+                setCurrentMove(movesHistoryLength + 1);
+
+                return true;
+              } catch (err) {
+                console.log(err);
+              }
+            }}
             variant="contained"
             sx={{
               backgroundColor: "var(--main-theme-color)",
+              border: "1px solid white",
               "&:hover": {
                 backgroundColor: "var(--main-theme-color)",
               },
