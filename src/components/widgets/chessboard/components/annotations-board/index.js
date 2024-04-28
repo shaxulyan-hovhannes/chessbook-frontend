@@ -12,13 +12,13 @@ import { ANNOTATIONS_BOARD_RADIO_FORM_DATA } from "constants/chessboard";
 import CloseIcon from "@mui/icons-material/Close";
 
 const ChessboardAnnotationsBoard = () => {
-  const { chessboardWidth, parsedPGN } = useChessboard();
+  const { chessboardWidth, parsedPGN, showAnnotationsBoard } = useChessboard();
 
   const [boardPosition, setBoardPosition] = useState(
     ANNOTATIONS_BOARD_RADIO_FORM_DATA[1].value
   );
 
-  return (
+  return showAnnotationsBoard ? (
     <div
       className={`chessboard-annotations-board chessboard-annotations-board-${boardPosition}`}
       style={{ width: chessboardWidth }}
@@ -49,7 +49,7 @@ const ChessboardAnnotationsBoard = () => {
         ))}
       </div>
     </div>
-  );
+  ) : null;
 };
 
 export default ChessboardAnnotationsBoard;

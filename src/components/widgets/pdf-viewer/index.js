@@ -10,8 +10,6 @@ import UploadFile from "components/ui/upload-file";
 import url from "assets/documents/document.pdf";
 // import { PDF_BASE64 } from "constants/tmp-data";
 
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-
 import {
   PDF_PAGES_INITIAL_LIMIT,
   PDF_PAGES_INCREMENT_AMOUNT,
@@ -24,27 +22,9 @@ import {
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
-const VisuallyHiddenInput = () => {
-  return (
-    <input
-      type="file"
-      style={{
-        clip: "rect(0 0 0 0)",
-        clipPath: "inset(50%)",
-        height: 1,
-        overflow: "hidden",
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        whiteSpace: "nowrap",
-        width: 1,
-      }}
-    />
-  );
-};
-
 const PDFViewer = () => {
   const [numPages, setNumPages] = useState(null);
+  const [pagesCount, setPagesCount] = useState(0);
   const [pageNumber, setPageNumber] = useState(PDF_MIN_SCALE);
   const containerRef = useRef(null);
   const [scale, setScale] = useState(
@@ -53,6 +33,8 @@ const PDFViewer = () => {
   const [uploadedBook, setUploadedBook] = useState(url);
 
   const onDocumentLoadSuccess = ({ numPages }) => {
+    setPagesCount(numPages);
+
     setNumPages(
       numPages > PDF_PAGES_INITIAL_LIMIT
         ? Math.max(
@@ -98,7 +80,7 @@ const PDFViewer = () => {
   };
 
   useEffect(() => {
-    function handleScroll() {
+    const handleScroll = () => {
       if (numPages < PDF_PAGES_INITIAL_LIMIT) return;
 
       const container = containerRef.current;
@@ -127,20 +109,22 @@ const PDFViewer = () => {
           container.scrollHeight - 50
       ) {
         if (pageNumber < numPages) {
-          setNumPages(numPages + PDF_PAGES_INCREMENT_AMOUNT);
-          localStorage.setItem(
-            PAGE_NUMBER_STORAGE_KEY,
-            numPages + PDF_PAGES_INCREMENT_AMOUNT
-          );
+          const incrementedPagesAmount =
+            numPages +
+            Math.min(PDF_PAGES_INCREMENT_AMOUNT, pagesCount - numPages);
+
+          setNumPages(incrementedPagesAmount);
+
+          localStorage.setItem(PAGE_NUMBER_STORAGE_KEY, incrementedPagesAmount);
         }
       }
-    }
+    };
 
     containerRef.current.addEventListener("scroll", handleScroll);
     return () => {
       containerRef.current.removeEventListener("scroll", handleScroll);
     };
-  }, [numPages]);
+  }, [numPages, containerRef, pageNumber]);
 
   useEffect(() => {
     setTimeout(() => {
