@@ -267,35 +267,41 @@ const ChessboardProvider = ({ children }) => {
   };
 
   const handleSetPosition = (move) => {
-    let currentMoveIndex = currentMove - 2;
+    try {
+      let currentMoveIndex = currentMove - 2;
 
-    const foundMoveIndex = movesHistoryValues.findIndex(
-      (moveItem) => moveItem.san === move
-    );
+      const foundMoveIndex = movesHistoryValues.findIndex(
+        (moveItem) => moveItem.san === move
+      );
 
-    if (currentMoveIndex === foundMoveIndex) return;
+      if (currentMoveIndex === foundMoveIndex) return;
 
-    const gameCopy = _.cloneDeep(game);
+      const gameCopy = _.cloneDeep(game);
 
-    if (currentMoveIndex < foundMoveIndex) {
-      while (++currentMoveIndex <= foundMoveIndex) {
-        const targetMove = movesHistoryValues[currentMoveIndex];
+      if (currentMoveIndex < foundMoveIndex) {
+        while (++currentMoveIndex <= foundMoveIndex) {
+          const targetMove = movesHistoryValues[currentMoveIndex];
 
-        gameCopy.move({
-          from: targetMove.from,
-          to: targetMove.to,
-        });
+          gameCopy.move({
+            from: targetMove.from,
+            to: targetMove.to,
+          });
+        }
+      } else {
+        while (currentMoveIndex > foundMoveIndex) {
+          gameCopy.undo();
+
+          currentMoveIndex--;
+        }
       }
-    } else {
-      while (currentMoveIndex > foundMoveIndex) {
-        gameCopy.undo();
 
-        currentMoveIndex--;
-      }
+      setGame(gameCopy);
+      setCurrentMove(foundMoveIndex + 2);
+
+      return true;
+    } catch (err) {
+      console.log(err);
     }
-
-    setGame(gameCopy);
-    setCurrentMove(foundMoveIndex + 2);
   };
 
   const value = {
