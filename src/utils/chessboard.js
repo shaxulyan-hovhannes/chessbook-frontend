@@ -1,26 +1,3 @@
-const parsePGN = (pgn = "") => {
-  if (typeof pgn !== "string" || !pgn.length) return [];
-
-  const output = [];
-
-  const parsedPGN = pgn.match(/\d+\.\s\S+(?:\s\S+)?/g) ?? [];
-
-  if (parsedPGN.length) {
-    parsedPGN.forEach((item) => {
-      const [moveNumber = "", whiteMove = "", blackMove = ""] =
-        item.split(/\s/);
-
-      output.push({
-        moveNumber,
-        whiteMove,
-        blackMove,
-      });
-    });
-  }
-
-  return output;
-};
-
 const parseMovesHistoryToPGN = (movesHistory = []) => {
   if (!Array.isArray(movesHistory) || !movesHistory.length) {
     return [];
@@ -43,4 +20,4 @@ const parseMovesHistoryToPGN = (movesHistory = []) => {
   return output;
 };
 
-export { parsePGN, parseMovesHistoryToPGN };
+export { parseMovesHistoryToPGN };
