@@ -38,9 +38,9 @@ const useChessboard = () => {
   } = useContext(ChessboardContext);
 
   const chessboardPositionX =
-    parseInt(localStorage.getItem(POS_X_STORAGE_KEY)) || 20;
+    parseInt(localStorage.getItem(POS_X_STORAGE_KEY)) || 0;
   const chessboardPositionY =
-    parseInt(localStorage.getItem(POS_Y_STORAGE_KEY)) || 50;
+    parseInt(localStorage.getItem(POS_Y_STORAGE_KEY)) || 0;
 
   useEffect(() => {
     const storageChessboardWidth = parseInt(
@@ -59,7 +59,7 @@ const useChessboard = () => {
       setChessboardHeight(storageChessboardHeight);
     }
 
-    if (chessboardPositionX > 20 || chessboardPositionY > 50) {
+    if (chessboardPositionX > 0 || chessboardPositionY > 0) {
       setShowChessboard(true);
     }
   }, [
