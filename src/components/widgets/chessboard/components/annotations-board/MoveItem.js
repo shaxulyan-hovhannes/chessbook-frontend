@@ -23,11 +23,11 @@ const MoveItem = ({ moveNumber = "", whiteMove = "", blackMove = "" }) => {
           <Button
             sx={{
               backgroundColor:
-                selectedMove?.san === whiteMove
+                selectedMove?.san === whiteMove && selectedMove?.color === "w"
                   ? "var(--main-theme-color)"
                   : "inherit",
               color:
-                selectedMove?.san === whiteMove
+                selectedMove?.san === whiteMove && selectedMove?.color === "w"
                   ? "white"
                   : "var(--main-theme-color)",
               "&:hover": {
@@ -45,11 +45,11 @@ const MoveItem = ({ moveNumber = "", whiteMove = "", blackMove = "" }) => {
           <Button
             sx={{
               backgroundColor:
-                selectedMove?.san === blackMove
+                selectedMove?.san === blackMove && selectedMove?.color === "b"
                   ? "var(--main-theme-color)"
                   : "inherit",
               color:
-                selectedMove?.san === blackMove
+                selectedMove?.san === blackMove && selectedMove?.color === "b"
                   ? "white"
                   : "var(--main-theme-color)",
               "&:hover": {

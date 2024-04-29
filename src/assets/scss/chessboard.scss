@@ -115,18 +115,30 @@
         margin-top: 10px;
         border-radius: 10px;
         padding: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: baseline;
+        gap: 8px;
 
         &-item {
-          width: 100%;
+          height: 25px;
           display: flex;
           align-items: center;
           font-size: 1.2rem;
           font-weight: 500;
 
           & button {
+            width: max-content;
+            height: 25px;
             min-width: auto;
+            min-height: auto;
             font-size: 1.2rem;
             text-transform: none;
+            padding: 0 5px;
+
+            &:first-child {
+              margin-left: 2px;
+            }
           }
         }
       }
